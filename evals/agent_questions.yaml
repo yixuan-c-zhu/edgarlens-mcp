@@ -1,0 +1,53 @@
+# Agent-level eval questions (week 2).
+#
+# Unlike tool_cases.yaml, these are plain-English questions an analyst would ask. An LLM
+# with the edgarlens tools answers each one; a grader checks the answer against the
+# reference and checks that every figure is cited to the right filing.
+#
+# What to measure:
+#   * answer_correct  - does the final answer match `reference` (numbers within 0.5%)?
+#   * cited           - does every number come with a source filing link?
+#   * tool_path       - did the agent call the tools you'd expect (`expected_tools`)?
+#   * calls           - how many tool calls did it take? (fewer is better)
+#
+# Fill `reference` from the filings yourself; don't trust model-generated answers here.
+
+questions:
+  - id: q01-simple-lookup
+    question: What was Apple's total revenue in fiscal 2024?
+    expected_tools: [get_financials]
+    reference: TODO
+    difficulty: easy
+
+  - id: q02-name-only
+    question: How much did the company behind Instagram earn in net income last year?
+    expected_tools: [find_company, get_financials]
+    reference: TODO
+    difficulty: medium  # needs the model to map Instagram -> Meta
+
+  - id: q03-growth
+    question: By what percentage did Nvidia's revenue grow between fiscal 2024 and fiscal 2025?
+    expected_tools: [get_financials]
+    reference: TODO
+    difficulty: medium  # needs arithmetic on two values
+
+  - id: q04-quarterly
+    question: What was Microsoft's revenue in the fourth quarter of fiscal 2025?
+    expected_tools: [get_financials]
+    reference: TODO
+    difficulty: hard  # Q4 is derived; answer should say so
+
+  - id: q05-filing
+    question: When did Tesla file its most recent annual report, and where can I read it?
+    expected_tools: [list_filings]
+    reference: TODO
+    difficulty: easy
+
+  - id: q06-comparison
+    question: Which had higher operating margin in their latest fiscal year, Apple or Microsoft?
+    expected_tools: [get_financials]
+    reference: TODO
+    difficulty: hard  # two companies, two metrics each, a ratio, and a comparison
+
+  # Aim for 30-50 questions, with a mix of difficulties and a few that should be
+  # refused or answered "not available" (e.g. data for a private company).

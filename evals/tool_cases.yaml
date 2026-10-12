@@ -1,0 +1,113 @@
+# Tool-level eval cases, run against the LIVE SEC API by evals/run_tool_evals.py.
+#
+# These test the tools directly (no LLM involved): given these arguments, does the tool
+# return the right number / company / filing? Agent-level evals (does an LLM pick the
+# right tools and answer correctly?) live in agent_questions.yaml.
+#
+# `verified: false` means the expected value came from memory, not from the filing.
+# Before trusting a case, open the filing, confirm the number, and flip it to true.
+# Figures are in raw USD as XBRL reports them (not thousands or millions).
+
+cases:
+  # --- Company lookup -------------------------------------------------------------
+  - id: lookup-alphabet-by-name
+    type: company_lookup
+    query: Alphabet
+    expected_cik: 1652044
+    verified: false
+
+  - id: lookup-nvidia-lowercase
+    type: company_lookup
+    query: nvidia
+    expected_cik: 1045810
+    verified: false
+
+  - id: lookup-ticker-typo-suggests-aapl
+    type: error_contains
+    tool: list_filings
+    args: { ticker: APPL }
+    contains: "Did you mean AAPL"
+    verified: true
+
+  # --- Filings ----------------------------------------------------------------------
+  - id: apple-fy2024-10k-filing-date
+    type: filing_lookup
+    ticker: AAPL
+    form: 10-K
+    since: "2024-10-01"
+    until: "2024-12-31"
+    expected_filing_date: "2024-11-01"
+    verified: false
+
+  # --- Financials: annual ---------------------------------------------------------
+  - id: apple-revenue-fy2024
+    type: financial_value
+    ticker: AAPL
+    metric: revenue
+    fiscal_year: 2024
+    expected: 391035000000
+    verified: false
+
+  - id: apple-revenue-fy2023
+    type: financial_value
+    ticker: AAPL
+    metric: revenue
+    fiscal_year: 2023
+    expected: 383285000000
+    verified: false
+
+  - id: apple-net-income-fy2024
+    type: financial_value
+    ticker: AAPL
+    metric: net_income
+    fiscal_year: 2024
+    expected: 93736000000
+    verified: false
+
+  - id: microsoft-revenue-fy2024  # fiscal year ends June 30
+    type: financial_value
+    ticker: MSFT
+    metric: revenue
+    fiscal_year: 2024
+    expected: 245122000000
+    verified: false
+
+  - id: nvidia-revenue-fy2025  # fiscal year ends late January: tests fiscal-year labelling
+    type: financial_value
+    ticker: NVDA
+    metric: revenue
+    fiscal_year: 2025
+    expected: 130497000000
+    verified: false
+
+  - id: nvidia-revenue-fy2024
+    type: financial_value
+    ticker: NVDA
+    metric: revenue
+    fiscal_year: 2024
+    expected: 60922000000
+    verified: false
+
+  - id: tesla-revenue-fy2024
+    type: financial_value
+    ticker: TSLA
+    metric: revenue
+    fiscal_year: 2024
+    expected: 97690000000
+    verified: false
+
+  - id: amazon-revenue-fy2024
+    type: financial_value
+    ticker: AMZN
+    metric: revenue
+    fiscal_year: 2024
+    expected: 637959000000
+    verified: false
+
+  # --- Add your own -----------------------------------------------------------------
+  # Good cases to add next (each one targets a known XBRL pitfall):
+  #   * a quarterly Q4 value (derived) checked against the earnings press release
+  #   * a bank or insurer (revenue tags differ; may come back "missing")
+  #   * a foreign filer on 20-F (e.g. TSM) to test annual-form handling
+  #   * a company with a restatement, checking `restated: true`
+  #   * a 52/53-week retailer whose year ends in early January
